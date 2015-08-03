@@ -1,5 +1,5 @@
 #!/bin/bash
-
+sudo rm -f ~/.rnd
 if grep -qs "CentOS release 5" "/etc/redhat-release"; then
 	echo "CentOS 5 is too old and not supported"
 	exit
