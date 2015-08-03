@@ -1,5 +1,20 @@
 #!/bin/bash
 
+if grep -qs "CentOS release 5" "/etc/redhat-release"; then
+	echo "CentOS 5 is too old and not supported"
+	exit
+fi
+
+if [[ -e /etc/debian_version ]]; then
+	OS=debian
+	RCLOCAL='/etc/rc.local'
+elif [[ -e /etc/centos-release || -e /etc/redhat-release ]]; then
+	OS=centos
+else
+	echo "Looks like you aren't running this installer on a Debian, Ubuntu or CentOS system"
+	exit
+fi
+
 genRSASSL() {
 	if [[ ! -d "$1" ]]; then
 		echo "Storage path not found"
@@ -110,7 +125,12 @@ genDHParam() {
 
 # Prepare openssl
 echo "Setting up for openssl"
-sudo apt-get install -y openssl
+if [[ "$OS" = 'debian' ]]; then
+	sudo apt-get install -y openssl
+else
+	sudo yum install -y openssl
+fi
+
 # Get current path
 CDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 # Begin
