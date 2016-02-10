@@ -115,7 +115,7 @@ genCertSSL() {
 	echo "Done"
 	echo "Generating ${FILENAME%.*}.pem"
 	cat "$5" "${FILENAME%.*}".crt > "${FILENAME%.*}".pem
-	cat "${FILENAME%.*}".pem "$5" > fullchain.pem
+	cat "${FILENAME%.*}".pem "$2" > fullchain.pem
 	
 	read -p "Do you want to gen DH paramemter [y/n]: " -e -i "y" DH
 	if [[ "${DH}" = "y"  ]]; then
