@@ -227,7 +227,7 @@ while :
             
             if [[ ! -e "${FPATH}/ecdsa/rootCA.key" ]]; then
             echo "Create rootCA key"
-			genECDSAkey "${FPATH}/ecdsa" "${DN}"
+			genECDSAkey "${FPATH}/ecdsa" "rootCA"
             fi
             if [[ ! -e "${FPATH}/ecdsa/rootCA.crt" ]]; then
             echo "Create rootCA crt"
