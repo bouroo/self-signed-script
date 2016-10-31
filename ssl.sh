@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 sudo rm -f ~/.rnd
 if grep -qs "CentOS release 5" "/etc/redhat-release"; then
 	echo "CentOS 5 is too old and not supported"
@@ -17,24 +17,24 @@ fi
 
 # path key name
 genCA() {
-    if [[ ! -d "$1" ]]; then
+	if [[ ! -d "$1" ]]; then
 		echo "Storage path not found"
 		exit 1
 	fi
-    
-    cd "$1" || exit 1
-    
-    if [[ ! -e "$2" ]]; then
+	
+	cd "$1" || exit 1
+	
+	if [[ ! -e "$2" ]]; then
 		echo "Key file not found"
 		exit 1
 	fi
 	
-    read -p "CA TTL in days: " -e -i "3650" TTL
-    
-    echo "Generating $3.crt"
-    
-    openssl req -x509 -new -nodes -key "$2" -sha512 -days "${TTL}" -out "$3".crt
-    
+	read -p "CA TTL in days: " -e -i "3650" TTL
+	
+	echo "Generating $3.crt"
+	
+	openssl req -x509 -new -nodes -key "$2" -sha512 -days "${TTL}" -out "$3".crt
+	
 	echo "Done"
 }
 
@@ -44,15 +44,15 @@ genRSAkey() {
 		echo "Storage path not found"
 		exit 1
 	fi
-    
-    cd "$1" || exit 1
+	
+	cd "$1" || exit 1
 	
 	read -p "Key lenght: " -e -i "4096" KL
 	
 	echo "Generating $2.key"
-    
+	
 	openssl genrsa -out "$2".key "${KL}"
-    
+	
 	echo "Done"
 }
 
@@ -64,13 +64,13 @@ genECDSAkey() {
 	fi
 	
 	cd "$1" || exit 1
-    
-    read -p "Which elliptic curve to use: " -e -i "secp384r1" EP
+	
+	read -p "Which elliptic curve to use: " -e -i "secp384r1" EP
 	
 	echo "Generating $2.key"
-    
+	
 	openssl ecparam -name "${EP}" -genkey -out "$2".key
-    
+	
 	echo "Done"
 }
 
@@ -80,25 +80,25 @@ genCertSSL() {
 		echo "Storage path not found"
 		exit 1
 	fi
-    
-    cd "$1" || exit 1
-    
-    if [[ ! -e "$2" ]]; then
+	
+	cd "$1" || exit 1
+	
+	if [[ ! -e "$2" ]]; then
 		echo "CA file not found"
 		exit 1
 	fi
-    
-    if [[ ! -e "$3" ]]; then
+	
+	if [[ ! -e "$3" ]]; then
 		echo "Key file not found"
 		exit 1
 	fi
-    
-    if [[ ! -e "$4" ]]; then
+	
+	if [[ ! -e "$4" ]]; then
 		echo "Cert request file not found"
 		exit 1
 	fi
-    
-    if [[ ! -e "$5" ]]; then
+	
+	if [[ ! -e "$5" ]]; then
 		echo "Cert request key file not found"
 		exit 1
 	fi
@@ -109,12 +109,13 @@ genCertSSL() {
 	read -p "TTL in days: " -e -i "1825" TTL
 	
 	echo "Generating ${FILENAME%.*}.crt"
-    
-    openssl x509 -req -in "$4" -CA rootCA.crt -CAkey "$3" -CAcreateserial -out "${FILENAME%.*}".crt -days "${TTL}"
-    
+	
+	openssl x509 -req -in "$4" -CA rootCA.crt -CAkey "$3" -CAcreateserial -out "${FILENAME%.*}".crt -days "${TTL}"
+	
 	echo "Done"
 	echo "Generating ${FILENAME%.*}.pem"
-	cat "$5" "${FILENAME%.*}".crt "$2" > "${FILENAME%.*}".pem
+	cat "$5" "${FILENAME%.*}".crt > "${FILENAME%.*}".pem
+	cat "${FILENAME%.*}".pem "$2" > fullchain.pem
 	
 	read -p "Do you want to gen DH paramemter [y/n]: " -e -i "y" DH
 	if [[ "${DH}" = "y"  ]]; then
@@ -131,15 +132,15 @@ genCertRequest() {
 		echo "Storage path not found"
 		exit 1
 	fi
-    
-    cd "$1" || exit 1
-    
-    if [[ ! -e "$2" ]]; then
+	
+	cd "$1" || exit 1
+	
+	if [[ ! -e "$2" ]]; then
 		echo "CA file not found"
 		exit 1
 	fi
-    
-    if [[ ! -e "$3" ]]; then
+	
+	if [[ ! -e "$3" ]]; then
 		echo "CSR key file not found"
 		exit 1
 	fi
@@ -167,7 +168,7 @@ genDHParam() {
 	read -p "DH parameter lenght: " -e -i "4096" DHL
 	
 	echo "Generating dhparam.pem"
-	openssl dhparam -dsaparam -out "${PEMFILE}" "${DHL}"
+	openssl dhparam -out "${PEMFILE}" "${DHL}"
 	echo "Done"
 	
 	echo "File in ${DIR}:"
@@ -198,51 +199,51 @@ while :
 		1)
 			echo "Where path do you want to store files?"
 			read -p "Select path to store files: " -e -i "${CDIR}" FPATH
-            read -p "Full domain name: " -e -i "server" DN
-            mkdir -p "${FPATH}/rsa"
-            
-            if [[ ! -e "${FPATH}/rsa/rootCA.key" ]]; then
-            echo "Create rootCA key"
+			read -p "Full domain name: " -e -i "server" DN
+			mkdir -p "${FPATH}/rsa"
+			
+			if [[ ! -e "${FPATH}/rsa/rootCA.key" ]]; then
+			echo "Create rootCA key"
 			genRSAkey "${FPATH}/rsa" "rootCA"
-            fi
-            if [[ ! -e "${FPATH}/rsa/rootCA.crt" ]]; then
-            echo "Create rootCA crt"
-            genCA "${FPATH}/rsa" "rootCA.key" "rootCA"
-            fi
-            
-            echo "Create host key"
+			fi
+			if [[ ! -e "${FPATH}/rsa/rootCA.crt" ]]; then
+			echo "Create rootCA crt"
+			genCA "${FPATH}/rsa" "rootCA.key" "rootCA"
+			fi
+			
+			echo "Create host key"
 			genRSAkey "${FPATH}/rsa" "${DN}"
-            echo "Create host cert request"
-            genCertRequest "${FPATH}/rsa" "rootCA.crt" "${DN}.key" "${DN}"
-            echo "Create host cert sign"
-            genCertSSL "${FPATH}/rsa" "rootCA.crt" "rootCA.key" "${DN}.csr" "${DN}.key"
+			echo "Create host cert request"
+			genCertRequest "${FPATH}/rsa" "rootCA.crt" "${DN}.key" "${DN}"
+			echo "Create host cert sign"
+			genCertSSL "${FPATH}/rsa" "rootCA.crt" "rootCA.key" "${DN}.csr" "${DN}.key"
 			exit 0
 		;;
 		2)
 			echo "Where path do you want to store files?"
 			read -p "Select path to store files: " -e -i "${CDIR}" FPATH
-            read -p "Full domain name: " -e -i "server" DN
-            mkdir -p "${FPATH}/ecdsa"
-            
-            if [[ ! -e "${FPATH}/ecdsa/rootCA.key" ]]; then
-            echo "Create rootCA key"
+			read -p "Full domain name: " -e -i "server" DN
+			mkdir -p "${FPATH}/ecdsa"
+			
+			if [[ ! -e "${FPATH}/ecdsa/rootCA.key" ]]; then
+			echo "Create rootCA key"
 			genECDSAkey "${FPATH}/ecdsa" "rootCA"
-            fi
-            if [[ ! -e "${FPATH}/ecdsa/rootCA.crt" ]]; then
-            echo "Create rootCA crt"
-            genCA "${FPATH}/ecdsa" "rootCA.key" "rootCA"
-            fi
-            
-            echo "Create host key"
+			fi
+			if [[ ! -e "${FPATH}/ecdsa/rootCA.crt" ]]; then
+			echo "Create rootCA crt"
+			genCA "${FPATH}/ecdsa" "rootCA.key" "rootCA"
+			fi
+			
+			echo "Create host key"
 			genECDSAkey "${FPATH}/ecdsa" "${DN}"
-            echo "Create host cert request"
-            genCertRequest "${FPATH}/ecdsa" "rootCA.crt" "${DN}.key" "${DN}"
-            echo "Create host cert sign"
-            genCertSSL "${FPATH}/ecdsa" "rootCA.crt" "rootCA.key" "${DN}.csr" "${DN}.key"
+			echo "Create host cert request"
+			genCertRequest "${FPATH}/ecdsa" "rootCA.crt" "${DN}.key" "${DN}"
+			echo "Create host cert sign"
+			genCertSSL "${FPATH}/ecdsa" "rootCA.crt" "rootCA.key" "${DN}.csr" "${DN}.key"
 			exit 0
 		;;
 		3)
-            read -p "Select path to store files: " -e -i "${CDIR}" FPATH
+			read -p "Select path to store files: " -e -i "${CDIR}" FPATH
 			read -p "rootCA cert: " -e -i "rootCA.crt" RCAC
 			read -p "CSR key: " -e -i "host.key" CSRK
 			read -p "Full domain name: " -e -i "server" DN
