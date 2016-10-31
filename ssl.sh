@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 sudo rm -f ~/.rnd
 if grep -qs "CentOS release 5" "/etc/redhat-release"; then
 	echo "CentOS 5 is too old and not supported"
@@ -114,8 +114,8 @@ genCertSSL() {
 	
 	echo "Done"
 	echo "Generating ${FILENAME%.*}.pem"
-	cat "$5" "${FILENAME%.*}".crt > "${FILENAME%.*}".pem
-	cat "${FILENAME%.*}".pem "$2" > fullchain.pem
+	cat "$5" "${FILENAME%.*}".crt "$2" > "${FILENAME%.*}".pem
+#	cat "${FILENAME%.*}".pem "$2" > fullchain.pem
 	
 	read -p "Do you want to gen DH paramemter [y/n]: " -e -i "y" DH
 	if [[ "${DH}" = "y"  ]]; then
@@ -168,7 +168,7 @@ genDHParam() {
 	read -p "DH parameter lenght: " -e -i "4096" DHL
 	
 	echo "Generating dhparam.pem"
-	openssl dhparam -out "${PEMFILE}" "${DHL}"
+	openssl dhparam -dsaparam -out "${PEMFILE}" "${DHL}"
 	echo "Done"
 	
 	echo "File in ${DIR}:"
