@@ -161,8 +161,9 @@ genDHParam() {
 		exit 1
 	fi
 	
-	DIR=$(dirname "$1")
-	PEMFILE="${DIR}/dhparam".pem
+	cd "$1" || exit 1
+
+	PEMFILE="$1/dhparam".pem
 	
 	echo "Gen DH"
 	read -p "DH parameter lenght: " -e -i "4096" DHL
@@ -193,6 +194,7 @@ while :
 	echo "1) RSA"
 	echo "2) ECDSA"
 	echo "3) Cert request"
+	echo "4) gen DHParam"
 	echo "0) Exit"
 	read -p "Select an option [0-3]: " OPTION
 	case "${OPTION}" in
@@ -248,6 +250,11 @@ while :
 			read -p "CSR key: " -e -i "host.key" CSRK
 			read -p "Full domain name: " -e -i "server" DN
 			genCertRequest "${FPATH}" "${RCAC}" "${CSRK}" "${DN}"
+			exit 0
+		;;
+		4)
+			read -p "Select path to store files: " -e -i "${CDIR}" FPATH
+			genDHParam "${FPATH}"
 			exit 0
 		;;
 		0)
